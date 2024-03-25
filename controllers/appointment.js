@@ -1,132 +1,112 @@
-    const { StatusCodes } = require("http-status-codes");
-    const { BadRequestError, NotFoundError } = require("../errors/not-found");
-    const Appointment = require("../models/Appointment")
-    const Doctor = require("../models/Doctor")
-    const mongoose = require("mongoose")
+const { StatusCodes } = require("http-status-codes");
+const { BadRequestError, NotFoundError } = require("../errors/not-found");
+const Appointment = require("../models/Appointment");
+const Doctor = require("../models/Doctor");
+const mongoose = require("mongoose");
 
+// Get all Appointments
+const getAllAppointments = async (req, res) => {
+    const { userId, isDoctor } = req.user;
+    
+    let filter = {};
+    if (!isDoctor) {
+        filter.userId = userId; // Only return appointments for the logged-in user unless they are a doctor
+    }
 
-    //get all Appointment
-    const getAllAppointments = async (req, res) => {
+    const appointments = await Appointment.find(filter).sort("createdAt");
+    res.status(StatusCodes.OK).json({ appointments, count: appointments.length });
+};
 
-          req.body = req.user.userId;
-          
-          const appointment = await Appointment.find( ).sort("createdAt");
-          res.status(StatusCodes.OK).json({ appointment, count: appointment.length });
-    };
+// Get an Appointment by ID
+const getAppointment = async (req, res) => {
+    const { userId } = req.user;
+    const { id: AppointmentId } = req.params;
 
+    const appointment = await Appointment.findOne({
+        _id: AppointmentId,
+        userId: userId // Ensure the appointment belongs to the logged-in user
+    });
 
+    if (!appointment) {
+        throw new NotFoundError(`No appointment found with id ${AppointmentId}`);
+    }
 
-    // get by id
-    const getAppointment = async (req, res) => {
-          const {
-            user: { userId },
-            params: { id: AppointmentId },
-          } = req;
+    res.status(StatusCodes.OK).json({ appointment });
+};
 
-          const appointment = await Appointment.findOne({ _id: AppointmentId});
-            if (!appointment) {
-              throw new NotFoundError(`No Appointments found with the id ${AppointmentId} `);
-            }
-              res.status(StatusCodes.OK).json({ appointment });
-    };
+// Create an Appointment
+const createAppointment = async (req, res) => {
+    try {
+        const { userId } = req.user;
+        const { doctorId } = req.body;
 
+        if (!mongoose.Types.ObjectId.isValid(doctorId)) {
+            return res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid doctor ID" });
+        }
 
+        const doctor = await Doctor.findById(doctorId);
+        if (!doctor) {
+            return res.status(StatusCodes.NOT_FOUND).json({ error: "Doctor not found" });
+        }
 
-        const createAppointment = async (req, res) => {
-          try {
-            const { userId } = req.user;
-            const { doctorId } = req.body;
-            console.log(req.user)
-
-                // Check if doctorId is a valid ObjectId
-                if (!mongoose.Types.ObjectId.isValid(doctorId)) {
-                  return res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid doctor ID" });
-                }
-
-
-
-                // Validate that the doctorId exists in the database
-                const doctor = await Doctor.findById(doctorId);
-                if (!doctor) {
-                  return res.status(StatusCodes.NOT_FOUND).json({ error: "Doctor not found" });
-                }
-
-
-
-
-                // If doctor is found, create the appointment
-                const appointment = await Appointment.create({
-                  ...req.body,
-                  createdBy: userId,
-                  userId: userId,
-                });
-
-            // Add the appointment ID to the doctor's appointments array and save
-            doctor.appointments.push(appointment._id);
-            await doctor.save();
-
-            res.status(StatusCodes.CREATED).json({ appointment });
-          } catch (err) {
-            console.error(`Error creating appointment: `, err);
-            res.status(StatusCodes.BAD_REQUEST).json({ error: err.message });
-          }
-        };
-
-
-        //patch
-        const updateAppointment = async (req, res) => {
-          const {
-            body: { createdAt, reason },
-            user: { userId },
-            params: { id: AppointmentId },
-          } = req;
-
-        //console.log(req.user)
-
-          if (reason === "" ) {
-            throw new BadRequestError("reason fields cannot be empty ");
-          }
-
-          const appointment = await Appointment.findByIdAndUpdate(
-            { _id: AppointmentId, createdBy: userId },
-            req.body,
-            { new: true, runValidators: true }
-          );
-          if (!appointment) {
-            throw new NotFoundError(`No Appointment with id ${AppointmentId}`);
-          }
-          res.status(StatusCodes.OK).json({ appointment });
-        };
-
-
-
-        //delete Appointment
-        const deleteAppointment = async (req, res) => {
-          const {
-            user: { userId },
-            params: { id: AppointmentId },
-          } = req;
-          //console.log(req.user.userId)
-
-          const appointment = await Appointment.findByIdAndRemove({
-            _id: AppointmentId,
+        const appointment = await Appointment.create({
+            ...req.body,
             createdBy: userId,
-          });
-          if (!appointment) {
-            throw new NotFoundError(`No Appointment id ${AppointmentId}`);
-          }
-          res.status(StatusCodes.OK).json({ msg: "successfully delete" });
-        };
-      
-        
+            userId: userId
+        });
 
-    module.exports = {
-      getAllAppointments,
-      getAppointment,
-      createAppointment,
-      updateAppointment,
-      deleteAppointment,
-    };
+        doctor.appointments.push(appointment._id);
+        await doctor.save();
 
+        res.status(StatusCodes.CREATED).json({ appointment });
+    } catch (err) {
+        console.error(`Error creating appointment: `, err);
+        res.status(StatusCodes.BAD_REQUEST).json({ error: err.message });
+    }
+};
 
+// Update an Appointment
+const updateAppointment = async (req, res) => {
+    const { userId } = req.user;
+    const { id: AppointmentId } = req.params;
 
+    const appointment = await Appointment.findOneAndUpdate(
+        {
+            _id: AppointmentId,
+            userId: userId // Ensure the appointment belongs to the logged-in user
+        },
+        req.body,
+        { new: true, runValidators: true }
+    );
+
+    if (!appointment) {
+        throw new NotFoundError(`No appointment found with id ${AppointmentId}`);
+    }
+
+    res.status(StatusCodes.OK).json({ appointment });
+};
+
+// Delete an Appointment
+const deleteAppointment = async (req, res) => {
+    const { userId } = req.user;
+    const { id: AppointmentId } = req.params;
+
+    const appointment = await Appointment.findOneAndDelete({
+        _id: AppointmentId,
+        userId: userId // Ensure the appointment belongs to the logged-in user
+    });
+
+    if (!appointment) {
+        throw new NotFoundError(`No appointment found with id ${AppointmentId}`);
+    }
+
+    res.status(StatusCodes.OK).json({ msg: "Successfully deleted" });
+};
+
+module.exports = {
+    getAllAppointments,
+    getAppointment,
+    createAppointment,
+    updateAppointment,
+    deleteAppointment
+};

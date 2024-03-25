@@ -1,9 +1,8 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const Doctor = require("./Doctor")
 const UserSchema = new mongoose.Schema({
-
- 
   firstName: {
     type: String,
     required: [true, "Please provide name"],
@@ -71,7 +70,7 @@ UserSchema.pre("save", async function (next) {
 
 
 
- UserSchema.methods.createJWT = function () {
+        UserSchema.methods.createJWT = function () {
       const payload = {
         userId: this._id,
         firstname: this.firstName,

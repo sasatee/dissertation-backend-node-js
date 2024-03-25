@@ -10,14 +10,14 @@ const authMiddleware = async (req, res, next) => {
   }
 
   const token = authHeader.split(" ")[1];
-  if (token == null) return res.send("If no token, unauthorized");
+
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
     //  const user = User.findById(payload.id).select("-password")
 
     //  req.user =user
-
+ 
     //attach the user to the job routes
     req.user = { 
             userId: payload.userId,
