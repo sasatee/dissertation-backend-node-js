@@ -28,7 +28,7 @@ const authMiddleware = async (req, res, next) => {
             profilePicture: payload.profilePic,
             doctorId:payload.doctorId
         };
-        //console.log(payload.doctorId)
+        console.log(payload)
     
 
     next();

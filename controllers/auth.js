@@ -3,7 +3,7 @@ const Doctor = require("../models/Doctor");
 const { StatusCodes } = require("http-status-codes");
 const { BadRequestError } = require("../errors");
 const { UnauthenticatedError } = require("../errors");
-
+const axios = require ("axios")
 
 
 
@@ -14,19 +14,19 @@ const googleLogin = async (req, res) => {
 
         // Validate the access token and code
         if (!access_token || !code) {
-          return res.status(400).json({ error: 'Access token and code are required.' });
+          return res.status(StatusCodes).BAD_REQUEST.json({ error: 'Access token and code are required.' });
         }
       
 
         // Make a request to Google's tokeninfo endpoint to validate the token
         const tokenInfoResponse = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${code}`);
         const tokenInfo = tokenInfoResponse.data;
-        console.log("userrrrrrrrrrrr",  code )
+        console.log("idToken:------",  code )
       
       
 
         if (tokenInfo.aud !== process.env.TOKEN_INFO_GOOGLESIGNIN) {
-          return res.status(401).json({ error: 'Invalid token.' });
+          return res.status(StatusCodes).UNAUTHORIZED.json({ error: 'Invalid token.' });
         }
         
 
