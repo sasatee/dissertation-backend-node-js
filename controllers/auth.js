@@ -21,8 +21,7 @@ const googleLogin = async (req, res) => {
         // Make a request to Google's tokeninfo endpoint to validate the token
         const tokenInfoResponse = await axios.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${code}`);
         const tokenInfo = tokenInfoResponse.data;
-        console.log("idToken:------",  code )
-      
+        
       
 
         if (tokenInfo.aud !== process.env.TOKEN_INFO_GOOGLESIGNIN) {
@@ -41,9 +40,9 @@ const googleLogin = async (req, res) => {
             lastName: tokenInfo.family_name,
             email: tokenInfo.email,
             // Set a default or generated password, as the password field is required by your schema
-            password: "Sarvma@0133sa", // Consider a more secure method for generating passwords
+            password: "PasswordEr123675@", // Consider a more secure method for generating passwords
             isDoctor: false, // Set default role or determine based on additional logic
-            gender: 'other', // Set default or additional logic to determine gender
+            gender: 'unspecified', // Set default or additional logic to determine gender
             profilePicture: tokenInfo.picture // Google profile picture URL
           });
         }
@@ -55,13 +54,14 @@ const googleLogin = async (req, res) => {
           user: {
             firstname: user.firstName,
             lastname: user.lastName,
-            gender: user.gender,
+            gender: user.gender, // Return the placeholder to indicate the need for an update
             isDoctor: user.isDoctor,
             profilePicture: user.profilePicture,
+            mustUpdateGender: user.gender === 'unspecified', // Flag to indicate the frontend to prompt for gender selection
           },
           token,
         });
-      // console.log(token)
+ 
           
 
       
@@ -93,6 +93,9 @@ const register = async (req, res) => {
         firstname: user.firstName,
         lastname: user.lastName,
         isDoctor: user.isDoctor,
+        doctorId:user.doctorId,
+        profilePicture:user.profilePicture
+
       },
       token,
     });

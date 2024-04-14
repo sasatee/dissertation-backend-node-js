@@ -38,8 +38,8 @@ const UserSchema = new mongoose.Schema({
   },
   gender: {
     type: String,
-    enum: ["male", "female", "other"],
-    require: [true, "Please make a selection"],
+    enum: ["male", "female", "other","unspecified"],
+    require: [false, "Please make a selection"],
   },
   isDoctor: {
     type: Boolean,
@@ -80,7 +80,7 @@ UserSchema.pre("save", async function (next) {
         profilePicture: this.profilePicture,
       };
 
-      if (this.isDoctor && this.doctorId) {
+      if (this.isDoctor ) {
         payload.doctorId = this.doctorId;
       }
 

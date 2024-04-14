@@ -6,6 +6,7 @@ const app = express();
 //router
 const authRouter = require("./routes/auth");
 const appointment = require("./routes/appointment");
+const doctor = require("./routes/doctor")
 
 
 
@@ -36,6 +37,7 @@ app.use(xss());
 // routes
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/appointment",userAuthentication, appointment);
+app.use("/api/v1/doctor",userAuthentication,doctor)
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);

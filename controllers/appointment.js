@@ -41,7 +41,7 @@ const createAppointment = async (req, res) => {
         const { doctorId } = req.body;
 
         if (!mongoose.Types.ObjectId.isValid(doctorId)) {
-            return res.status(StatusCodes.BAD_REQUEST).json({ error: "Invalid doctor ID" });
+            return res.status(StatusCodes.BAD_REQUEST).json({ error: "Check carefully doctor ID is corrected" });
         }
 
         const doctor = await Doctor.findById(doctorId);

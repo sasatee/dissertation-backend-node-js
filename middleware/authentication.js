@@ -1,4 +1,4 @@
-const User = require("../models/User");
+
 const jwt = require("jsonwebtoken");
 const { UnauthenticatedError } = require("../errors");
 
@@ -25,10 +25,10 @@ const authMiddleware = async (req, res, next) => {
             lastname:payload.lastname,
             isDoctor:payload.isDoctor,
             gender:payload.gender,
-            profilePicture: payload.profilePic,
+            profilePicture: payload.profilePicture,
             doctorId:payload.doctorId
         };
-        console.log(payload)
+       
     
 
     next();
