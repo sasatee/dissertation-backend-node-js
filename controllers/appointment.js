@@ -20,6 +20,8 @@ const getAllAppointments = async (req, res) => {
 
 // Get an Appointment by ID
 const getAppointment = async (req, res) => {
+
+
   const { userId } = req.user;
   const { id: AppointmentId } = req.params;
 
@@ -36,25 +38,23 @@ const getAppointment = async (req, res) => {
 };
 
 // Create an Appointment
+
 const createAppointment = async (req, res) => {
+  const { userId } = req.user;
+  const { doctorId } = req.body;
+
+  if (!doctorId || !mongoose.Types.ObjectId.isValid(doctorId)) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid or missing doctor ID" });
+  }
+
+  const doctor = await Doctor.findById(doctorId);
+  if (!doctor) {
+    return res.status(StatusCodes.NOT_FOUND).json({ message: "Doctor not found" });
+  }
+
   try {
-    const { userId } = req.user;
-    const { doctorId } = req.body;
-
-    if (!mongoose.Types.ObjectId.isValid(doctorId)) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: err.message });
-    }
-
-    const doctor = await Doctor.findById(doctorId);
-    if (!doctor) {
-      return res
-        .status(StatusCodes.NOT_FOUND)
-        .json({ error: "Doctor not found" });
-    }
-
     const appointment = await Appointment.create({
       ...req.body,
-      createdBy: userId,
       userId: userId,
     });
 
@@ -67,6 +67,7 @@ const createAppointment = async (req, res) => {
     res.status(StatusCodes.BAD_REQUEST).json({ error: err.message });
   }
 };
+
 
 // Update an Appointment
 const updateAppointment = async (req, res) => {
