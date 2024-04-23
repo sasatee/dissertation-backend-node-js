@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 // Get all Appointments
 const getAllAppointments = async (req, res) => {
     const { userId, isDoctor } = req.user;
+  console.log(userId, isDoctor);
     
     let filter = {};
     if (!isDoctor) {
