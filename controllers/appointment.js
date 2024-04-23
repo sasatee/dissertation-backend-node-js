@@ -1,5 +1,5 @@
 const { StatusCodes } = require("http-status-codes");
-const { BadRequestError, NotFoundError } = require("../errors/not-found");
+const {NotFoundError } = require("../errors/not-found");
 const Appointment = require("../models/Appointment");
 const Doctor = require("../models/Doctor");
 const mongoose = require("mongoose");
