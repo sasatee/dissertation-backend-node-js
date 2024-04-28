@@ -25,6 +25,12 @@ const doctorSchema = new mongoose.Schema({
   specialization: {
     type: String,
   },
+  experience: {
+    type: String,
+  },
+  rating: {
+    type: Number,
+  },
   availability: {
     type: [String],
     require: false,
