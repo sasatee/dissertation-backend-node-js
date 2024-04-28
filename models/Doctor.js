@@ -29,6 +29,10 @@ const doctorSchema = new mongoose.Schema({
     type: [String],
     require: false,
   },
+  description: {
+    type: String,
+    require: false,
+  },
   appointments: [
     {
       type: mongoose.Schema.Types.ObjectId,
