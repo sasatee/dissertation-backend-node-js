@@ -37,7 +37,7 @@ const doctorSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    require: false,
+    require: true,
   },
   appointments: [
     {

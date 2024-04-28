@@ -51,6 +51,9 @@ const UserSchema = new mongoose.Schema({
     default:"noProfilePicture"
        //require: [true, "Give profile picture"],
   },
+   rating: {
+    type: Number,
+  },
   doctorId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Doctor",
