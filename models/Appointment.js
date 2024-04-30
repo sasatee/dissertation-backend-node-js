@@ -20,6 +20,10 @@ const appointmentSchema = new Schema(
       type: String,
       required: true,
     },
+    bookedTime: { 
+    type: Date, 
+    required: true 
+    }, 
   },
   { timestamps: true }
 );
