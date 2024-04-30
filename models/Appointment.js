@@ -23,9 +23,14 @@ const appointmentSchema = new Schema(
     bookedTime: { 
     type: Date, 
     required: true 
-    }, 
+    },
+    bookedTimeAMOrPM:{
+      type:String,
+      require:true
+    }
+
   },
-  { timestamps: true }
+  // { timestamps: true }
 );
 
 module.exports = mongoose.model("Appointment", appointmentSchema);

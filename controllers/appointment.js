@@ -40,7 +40,7 @@ const getAppointment = async (req, res) => {
 // Create an Appointment
 const createAppointment = async (req, res) => {
   const { userId } = req.user;
-  const { doctorId,bookedTime } = req.body;
+  const { doctorId,bookedTime,bookedTimeAMOrPM } = req.body;
 
   if (!doctorId || !mongoose.Types.ObjectId.isValid(doctorId)) {
     return res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid or missing doctor ID" });
@@ -54,6 +54,9 @@ const createAppointment = async (req, res) => {
    if (!bookedTime) {
         return res.status(StatusCodes.BAD_REQUEST).json({ message: "Booking time is required" });
     }
+     if(!bookedTimeAMOrPM){
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: "Booking time in Am or Time is required" });
+     }
 
   try {
     const appointment = await Appointment.create({
