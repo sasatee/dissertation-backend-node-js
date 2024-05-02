@@ -27,7 +27,11 @@ const appointmentSchema = new Schema(
     bookedTimeAMOrPM:{
       type:String,
       require:true
-    }
+    },
+    profilePicture: {
+    type: String,
+   
+  }
 
   },
   // { timestamps: true }

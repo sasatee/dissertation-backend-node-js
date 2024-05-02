@@ -1,5 +1,5 @@
 const { StatusCodes } = require("http-status-codes");
-const {NotFoundError } = require("../errors/not-found");
+const { NotFoundError } = require("../errors/not-found");
 const Appointment = require("../models/Appointment");
 const Doctor = require("../models/Doctor");
 const mongoose = require("mongoose");
@@ -7,7 +7,6 @@ const mongoose = require("mongoose");
 // Get all Appointments
 const getAllAppointments = async (req, res) => {
   const { userId, isDoctor } = req.user;
- 
 
   let filter = {};
   if (!isDoctor) {
@@ -20,8 +19,6 @@ const getAllAppointments = async (req, res) => {
 
 // Get an Appointment by ID
 const getAppointment = async (req, res) => {
-
-
   const { userId } = req.user;
   const { id: AppointmentId } = req.params;
 
@@ -40,29 +37,43 @@ const getAppointment = async (req, res) => {
 // Create an Appointment
 const createAppointment = async (req, res) => {
   const { userId } = req.user;
-  const { doctorId,bookedTime,bookedTimeAMOrPM } = req.body;
+  const { doctorId, bookedTime, bookedTimeAMOrPM } = req.body;
 
   if (!doctorId || !mongoose.Types.ObjectId.isValid(doctorId)) {
-    return res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid or missing doctor ID" });
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Invalid or missing doctor ID" });
   }
 
   const doctor = await Doctor.findById(doctorId);
   if (!doctor) {
-    return res.status(StatusCodes.NOT_FOUND).json({ message: "Doctor not found" });
+    return res
+      .status(StatusCodes.NOT_FOUND)
+      .json({ message: "Doctor not found" });
   }
 
-   if (!bookedTime) {
-        return res.status(StatusCodes.BAD_REQUEST).json({ message: "Booking time is required" });
-    }
-     if(!bookedTimeAMOrPM){
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: "Booking time in Am or Time is required" });
-     }
+  if (!bookedTime) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Booking time is required" });
+  }
+  if (!bookedTimeAMOrPM) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Booking time in Am or Time is required" });
+  }
+  // Extract the profilePicture field from the doctor model
+  //cahnge if neccesary
+  const profilePicture = doctor.profilePicture;
+  //
 
   try {
     const appointment = await Appointment.create({
       ...req.body,
       userId: userId,
-      bookedTime: new Date(bookedTime) // Ensure the date is correctly formatted
+      bookedTime: new Date(bookedTime),
+      //change
+      profilePicture: profilePicture, // Ensure the date is correctly formatted
     });
 
     doctor.appointments.push(appointment._id);
@@ -74,7 +85,6 @@ const createAppointment = async (req, res) => {
     res.status(StatusCodes.BAD_REQUEST).json({ error: err.message });
   }
 };
-
 
 // Update an Appointment
 const updateAppointment = async (req, res) => {
