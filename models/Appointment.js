@@ -31,7 +31,11 @@ const appointmentSchema = new Schema(
     profilePicture: {
     type: String,
    
+  },
+  doctorName:{
+    type:String
   }
+
 
   },
   // { timestamps: true }

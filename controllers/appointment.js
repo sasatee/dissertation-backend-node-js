@@ -24,7 +24,7 @@ const getAppointment = async (req, res) => {
 
   const appointment = await Appointment.findOne({
     _id: AppointmentId,
-    userId: userId, // Ensure the appointment belongs to the logged-in user
+    // userId: userId, // Ensure the appointment belongs to the logged-in user
   });
 
   if (!appointment) {
@@ -64,9 +64,8 @@ const createAppointment = async (req, res) => {
   }
   // Extract the profilePicture field from the doctor model
   //cahnge if neccesary
-  const profilePicture = doctor.profilePicture;
-  const firstName = doctor.firstName;
-  const lastName = doctor.lastName;
+  const { lastName, profilePicture, firstName } = doctor;
+
   //
 
   try {
@@ -74,10 +73,8 @@ const createAppointment = async (req, res) => {
       ...req.body,
       userId: userId,
       bookedTime: new Date(bookedTime),
-      //change
       profilePicture: profilePicture,
-      firstName: firstName,
-      lastName: lastName,
+      doctorName: `${firstName} ${lastName}`,
     });
 
     doctor.appointments.push(appointment._id);
@@ -93,12 +90,13 @@ const createAppointment = async (req, res) => {
 // Update an Appointment
 const updateAppointment = async (req, res) => {
   const { userId } = req.user;
+
   const { id: AppointmentId } = req.params;
 
   const appointment = await Appointment.findOneAndUpdate(
     {
       _id: AppointmentId,
-      userId: userId, // Ensure the appointment belongs to the logged-in user
+      //userId: userId, // Ensure the appointment belongs to the logged-in user
     },
     req.body,
     { new: true, runValidators: true }
@@ -118,7 +116,7 @@ const deleteAppointment = async (req, res) => {
 
   const appointment = await Appointment.findOneAndDelete({
     _id: AppointmentId,
-    userId: userId, // Ensure the appointment belongs to the logged-in user
+    //userId: userId, // Ensure the appointment belongs to the logged-in user
   });
 
   if (!appointment) {
