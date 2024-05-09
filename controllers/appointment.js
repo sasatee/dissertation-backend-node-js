@@ -65,6 +65,8 @@ const createAppointment = async (req, res) => {
   // Extract the profilePicture field from the doctor model
   //cahnge if neccesary
   const profilePicture = doctor.profilePicture;
+  const firstName = doctor.firstName;
+  const lastName = doctor.lastName;
   //
 
   try {
@@ -73,7 +75,9 @@ const createAppointment = async (req, res) => {
       userId: userId,
       bookedTime: new Date(bookedTime),
       //change
-      profilePicture: profilePicture, // Ensure the date is correctly formatted
+      profilePicture: profilePicture,
+      firstName: firstName,
+      lastName: lastName,
     });
 
     doctor.appointments.push(appointment._id);
