@@ -20,24 +20,25 @@ const appointmentSchema = new Schema(
       type: String,
       required: true,
     },
-    bookedTime: { 
-    type: Date, 
-    required: true 
+    bookedTime: {
+      type: Date,
+      required: true,
     },
-    bookedTimeAMOrPM:{
-      type:String,
-      require:true
+    bookedTimeAMOrPM: {
+      type: String,
+      require: true,
     },
     profilePicture: {
-    type: String,
-   
-  },
-  doctorName:{
-    type:String
+      type: String,
+    },
+    doctorName: {
+      type: String,
+    },
+    price: {
+      type: Number,
+      require: true,
+    },
   }
-
-
-  },
   // { timestamps: true }
 );
 

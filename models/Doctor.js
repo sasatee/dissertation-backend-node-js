@@ -39,12 +39,17 @@ const doctorSchema = new mongoose.Schema({
     type: String,
     require: true,
   },
+   price:{
+    type:Number,
+    require:true,
+  },
   appointments: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Appointment",
     },
   ],
+ 
 });
 
 module.exports = mongoose.model("Doctor", doctorSchema);

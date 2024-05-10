@@ -62,11 +62,14 @@ const createAppointment = async (req, res) => {
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Booking time in Am or Time is required" });
   }
+
   // Extract the profilePicture field from the doctor model
   //cahnge if neccesary
-  const { lastName, profilePicture, firstName } = doctor;
+  const { lastName, profilePicture, firstName, price } = doctor;
+
 
   //
+  
 
   try {
     const appointment = await Appointment.create({
@@ -74,6 +77,7 @@ const createAppointment = async (req, res) => {
       userId: userId,
       bookedTime: new Date(bookedTime),
       profilePicture: profilePicture,
+      price: price,
       doctorName: `${firstName} ${lastName}`,
     });
 
