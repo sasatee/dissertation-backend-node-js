@@ -1,5 +1,5 @@
 const stripe = require("stripe")(
-  "sk_test_51NVzlNDK8Xa4nOxws2wu1zQ7C6ZRNadOzmGTau1V4w5w55gwYKqAkW9ChWtQpWV0NGzHoU4VpsTJfB2hhFQZE2SJ00FLpMGGTE"
+ process.env.STRIPE_SECRET
 );
 const paymentIntent = async (req, res) => {
  try {
