@@ -67,36 +67,81 @@ const googleLogin = async (req, res) => {
 };
 
 const register = async (req, res) => {
-  //if user is client
-  const { email } = req.body;
+  try {
+    const { firstName, lastName, email, password, isDoctor, gender, profilePicture } = req.body;
 
-  let checkEmail = await User.findOne({ email });
-  if (checkEmail) {
-    throw new BadRequestError("Email already existed");
-  }
+    // Check if the email already exists
+    let checkEmail = await User.findOne({ email });
+    if (checkEmail) {
+      throw new BadRequestError("Email already exists");
+    }
 
-  const user = await User.create({ ...req.body });
+    // Create a new user
+    const newUser = { firstName, lastName, email, isDoctor, gender, profilePicture,password };
+    const user = await User.create(newUser);
 
-  const token = user.createJWT();
+    // If the user is a doctor, create a doctor profile
+    if (isDoctor) {
+      // Assuming Doctor schema requires additional fields like 'name' and 'password'
+      await Doctor.create({ firstName, lastName, email, isDoctor, gender, profilePicture,doctorId:user._id });
+    }
 
-  res.status(StatusCodes.CREATED).json({
-    user: {
-      firstname: user.firstName,
-      lastname: user.lastName,
-      isDoctor: user.isDoctor,
-      doctorId: user.doctorId,
-      profilePicture: user.profilePicture,
-    },
-    token,
-  });
+    // Create a JWT token for the user
+    const token = user.createJWT();
 
-  //if user is a doctor , create doctor profile
-  if (req.body.isDoctor) {
-    await Doctor.create({
-      ...req.body,
+    // Response with user details and token
+    res.status(StatusCodes.CREATED).json({
+      user: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        isDoctor: user.isDoctor,
+        doctorId: user.doctorId,
+        profilePicture: user.profilePicture,
+      },
+      token,
+    
     });
+
+    
+  } catch (error) {
+    // Handle errors
+    console.error(error);
+    res.status(StatusCodes.BAD_REQUEST).json({ msg: error.message });
   }
 };
+
+
+// const register = async (req, res) => {
+//   //if user is client
+//   const { email } = req.body;
+
+//   let checkEmail = await User.findOne({ email });
+//   if (checkEmail) {
+//     throw new BadRequestError("Email already existed");
+//   }
+
+//   const user = await User.create({ ...req.body });
+
+//   const token = user.createJWT();
+
+//   res.status(StatusCodes.CREATED).json({
+//     user: {
+//       firstname: user.firstName,
+//       lastname: user.lastName,
+//       isDoctor: user.isDoctor,
+//       doctorId: user.doctorId,
+//       profilePicture: user.profilePicture,
+//     },
+//     token,
+//   });
+
+//   //if user is a doctor , create doctor profile
+//   if (req.body.isDoctor) {
+//     await Doctor.create({
+//       ...req.body,
+//     });
+//   }
+// };
 
 const login = async (req, res) => {
   const { email, password } = req.body;
