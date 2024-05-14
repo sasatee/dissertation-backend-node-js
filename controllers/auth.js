@@ -51,6 +51,7 @@ const googleLogin = async (req, res) => {
 
     res.status(StatusCodes.OK).json({
       user: {
+        userId: user._id,
         firstname: user.firstName,
         lastname: user.lastName,
         gender: user.gender, // Return the placeholder to indicate the need for an update
@@ -68,7 +69,15 @@ const googleLogin = async (req, res) => {
 
 const register = async (req, res) => {
   try {
-    const { firstName, lastName, email, password, isDoctor, gender, profilePicture } = req.body;
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      isDoctor,
+      gender,
+      profilePicture,
+    } = req.body;
 
     // Check if the email already exists
     let checkEmail = await User.findOne({ email });
@@ -77,13 +86,29 @@ const register = async (req, res) => {
     }
 
     // Create a new user
-    const newUser = { firstName, lastName, email, isDoctor, gender, profilePicture,password };
+    const newUser = {
+      firstName,
+      lastName,
+      email,
+      isDoctor,
+      gender,
+      profilePicture,
+      password,
+    };
     const user = await User.create(newUser);
 
     // If the user is a doctor, create a doctor profile
     if (isDoctor) {
       // Assuming Doctor schema requires additional fields like 'name' and 'password'
-      await Doctor.create({ firstName, lastName, email, isDoctor, gender, profilePicture,doctorId:user._id });
+      await Doctor.create({
+        firstName,
+        lastName,
+        email,
+        isDoctor,
+        gender,
+        profilePicture,
+        doctorId: user._id,
+      });
     }
 
     // Create a JWT token for the user
@@ -99,17 +124,13 @@ const register = async (req, res) => {
         profilePicture: user.profilePicture,
       },
       token,
-    
     });
-
-    
   } catch (error) {
     // Handle errors
     console.error(error);
     res.status(StatusCodes.BAD_REQUEST).json({ msg: error.message });
   }
 };
-
 
 // const register = async (req, res) => {
 //   //if user is client
@@ -166,6 +187,7 @@ const login = async (req, res) => {
   const token = user.createJWT();
   res.status(StatusCodes.OK).json({
     user: {
+      userId: user._id,
       firstname: user.firstName,
       lastname: user.lastName,
       gender: user.gender,

@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const Doctor = require("./Doctor")
+const Doctor = require("./Doctor");
 const UserSchema = new mongoose.Schema({
   firstName: {
     type: String,
@@ -25,7 +25,6 @@ const UserSchema = new mongoose.Schema({
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
       "Please provide valid email",
     ],
-
   },
   password: {
     type: String,
@@ -38,27 +37,26 @@ const UserSchema = new mongoose.Schema({
   },
   gender: {
     type: String,
-    enum: ["male", "female", "other","unspecified"],
+    enum: ["male", "female", "other", "unspecified"],
     require: [false, "Please make a selection"],
   },
   isDoctor: {
     type: Boolean,
     default: false,
-    
   },
   profilePicture: {
     type: String,
-    default:"noProfilePicture"
-       //require: [true, "Give profile picture"],
+    default: "noProfilePicture",
+    //require: [true, "Give profile picture"],
   },
-   rating: {
+  rating: {
     type: Number,
   },
   doctorId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Doctor",
   },
-    appointments: [
+  appointments: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Appointment",
@@ -71,27 +69,24 @@ UserSchema.pre("save", async function (next) {
   next();
 });
 
+UserSchema.methods.createJWT = function () {
+  const payload = {
+    userId: this._id,
+    firstname: this.firstName,
+    lastname: this.lastName,
+    isDoctor: this.isDoctor,
+    gender: this.gender,
+    profilePicture: this.profilePicture,
+  };
 
+  if (this.isDoctor) {
+    payload.doctorId = this.doctorId;
+  }
 
-        UserSchema.methods.createJWT = function () {
-      const payload = {
-        userId: this._id,
-        firstname: this.firstName,
-        lastname: this.lastName,
-        isDoctor: this.isDoctor,
-        gender: this.gender,
-        profilePicture: this.profilePicture,
-      };
-
-      if (this.isDoctor ) {
-        payload.doctorId = this.doctorId;
-      }
-
-      return jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: process.env.TOKEN_LIFETIME,
-      });
-    };
-
+  return jwt.sign(payload, process.env.JWT_SECRET, {
+    expiresIn: process.env.TOKEN_LIFETIME,
+  });
+};
 
 UserSchema.methods.comparePassword = async function (canditatePassword) {
   const isMatch = await bcrypt.compare(canditatePassword, this.password);
