@@ -35,13 +35,37 @@ const getAllAppointments = async (req, res) => {
 // };
 
 // Get an Appointment by ID or by bookedTime date
+// const getAppointment = async (req, res) => {
+//   // const { userId } = req.user;
+//   const { id: userId } = req.params;
+//   const { bookedDate } = req.query;
+
+//   let filter = { userId: userId };
+
+//   if (bookedDate) {
+//     const startDate = new Date(bookedDate);
+//     const endDate = new Date(startDate);
+//     endDate.setDate(startDate.getDate() + 1); // Increment the date to get the next day
+
+//     filter.bookedTime = { $gte: startDate, $lt: endDate };
+//   }
+
+//   const appointment = await Appointment.find(filter);
+
+//   if (!appointment) {
+//     throw new NotFoundError(`No appointment found with id ${userId}`);
+//   }
+
+//   res.status(StatusCodes.OK).json({ appointment });
+// };
+
+//find appointment by user Id and user date book
 const getAppointment = async (req, res) => {
-  // const { userId } = req.user;
-  const { id: userId } = req.params;
-  const { bookedDate } = req.query;
+  // const {userId} = req.user;
+  const { id: userId } = req.params; // Get userId from params
+  const { bookedDate } = req.query; // Get bookedDate from query
 
   let filter = { userId: userId };
-
   if (bookedDate) {
     const startDate = new Date(bookedDate);
     const endDate = new Date(startDate);
@@ -50,16 +74,21 @@ const getAppointment = async (req, res) => {
     filter.bookedTime = { $gte: startDate, $lt: endDate };
   }
 
-  const appointment = await Appointment.findOne(filter);
+  const appointments = await Appointment.find(filter);
 
-  if (!appointment) {
-    throw new NotFoundError(`No appointment found with id ${userId}`);
+  if (appointments.length === 0) {
+    throw new NotFoundError(
+      `No appointments found for user id ${userId} on date ${bookedDate}`
+    );
   }
 
-  res.status(StatusCodes.OK).json({ appointment });
+  res.status(StatusCodes.OK).json({
+    appointments,
+    count: appointments.length,
+  });
 };
 
-// Create an Appointment
+// Create an Appointment by user
 const createAppointment = async (req, res) => {
   const { userId } = req.user;
   const { doctorId, bookedTime, bookedTimeAMOrPM } = req.body;
