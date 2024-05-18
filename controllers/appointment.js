@@ -17,18 +17,43 @@ const getAllAppointments = async (req, res) => {
   res.status(StatusCodes.OK).json({ appointments, count: appointments.length });
 };
 
-// Get an Appointment by ID
-const getAppointment = async (req, res) => {
-  const { userId } = req.user;
-  const { id: AppointmentId } = req.params;
+// // Get an Appointment by ID
+// const getAppointment = async (req, res) => {
+//   const { userId } = req.user;
+//   const { id: AppointmentId } = req.params;
 
-  const appointment = await Appointment.findOne({
-    _id: AppointmentId,
-    // userId: userId, // Ensure the appointment belongs to the logged-in user
-  });
+//   const appointment = await Appointment.findOne({
+//     _id: AppointmentId,
+//     // userId: userId, // Ensure the appointment belongs to the logged-in user
+//   });
+
+//   if (!appointment) {
+//     throw new NotFoundError(`No appointment found with id ${AppointmentId}`);
+//   }
+
+//   res.status(StatusCodes.OK).json({ appointment });
+// };
+
+// Get an Appointment by ID or by bookedTime date
+const getAppointment = async (req, res) => {
+  // const { userId } = req.user;
+  const { id: userId } = req.params;
+  const { bookedDate } = req.query;
+
+  let filter = { userId: userId };
+
+  if (bookedDate) {
+    const startDate = new Date(bookedDate);
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 1); // Increment the date to get the next day
+
+    filter.bookedTime = { $gte: startDate, $lt: endDate };
+  }
+
+  const appointment = await Appointment.findOne(filter);
 
   if (!appointment) {
-    throw new NotFoundError(`No appointment found with id ${AppointmentId}`);
+    throw new NotFoundError(`No appointment found with id ${userId}`);
   }
 
   res.status(StatusCodes.OK).json({ appointment });
@@ -67,9 +92,7 @@ const createAppointment = async (req, res) => {
   //cahnge if neccesary
   const { lastName, profilePicture, firstName, price } = doctor;
 
-
   //
-  
 
   try {
     const appointment = await Appointment.create({
