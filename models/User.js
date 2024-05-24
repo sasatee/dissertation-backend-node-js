@@ -1,4 +1,4 @@
-  const mongoose = require("mongoose");
+const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Doctor = require("./Doctor");
@@ -46,8 +46,6 @@ const UserSchema = new mongoose.Schema({
   },
   profilePicture: {
     type: String,
-    default: "noProfilePicture",
-    //require: [true, "Give profile picture"],
   },
   rating: {
     type: Number,
