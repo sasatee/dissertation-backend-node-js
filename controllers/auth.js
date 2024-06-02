@@ -5,6 +5,7 @@ const { BadRequestError } = require("../errors");
 const { UnauthenticatedError, NotFoundError } = require("../errors");
 const axios = require("axios");
 const sendEmail = require("./../util/email");
+const crypto = require("crypto");
 
 // Add this function google idToken
 const googleLogin = async (req, res) => {
@@ -152,7 +153,7 @@ const login = async (req, res) => {
       "Invalid Credentials,please verify the password again"
     );
   }
-  //compare password
+
   const token = user.createJWT();
   res.status(StatusCodes.OK).json({
     user: {
@@ -200,7 +201,7 @@ const forgotPassword = async (req, res) => {
   } catch (err) {
     user.passwordResetToken = undefined;
     user.passwordResetExpired = undefined;
-   await user.save({ validateBeforeSave: false });
+    await user.save({ validateBeforeSave: false });
 
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
       msg: "There was an error occur sending password reset. Please try again later",
@@ -208,8 +209,44 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-const resetPassword = (req, res) => {
-  console.log(req);
+const resetPassword = async (req, res) => {
+  //1. IF THE USER EXISTS WITH THE GIVEN TOKEN & TOKEN HAS NOT EXPIRED
+  const token = crypto
+    .createHash("sha256")
+    .update(req.params.token)
+    .digest("hex");
+  const user = await User.findOne({
+    passwordResetToken: token,
+    passwordResetExpired: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    res.status(StatusCodes.BAD_REQUEST).json({
+      msg: "Token is invalid or has expires!",
+    });
+  }
+  //2. resetting the user PASSWORD
+  user.password = req.body.password;
+  user.confirmPassword = req.body.confirmPassword;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpired = undefined;
+  user.passwordChangedAt = Date.now();
+
+  user.save();
+
+  //.#.LOGIN USER
+  const loginToken = user.createJWT();
+  res.status(StatusCodes.OK).json({
+    user: {
+      userId: user._id,
+      firstname: user.firstName,
+      lastname: user.lastName,
+      gender: user.gender,
+      isDoctor: user.isDoctor,
+      profilePicture: user.profilePicture,
+    },
+    loginToken,
+  });
 };
 
 module.exports = {
