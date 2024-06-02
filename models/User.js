@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const Doctor = require("./Doctor");
+const crypto = require("crypto");
 const UserSchema = new mongoose.Schema({
   firstName: {
     type: String,
@@ -60,6 +60,8 @@ const UserSchema = new mongoose.Schema({
       ref: "Appointment",
     },
   ],
+  passwordResetToken: String,
+  passwordResetExpired: Date,
 });
 UserSchema.pre("save", async function (next) {
   const salt = await bcrypt.genSalt(10);
@@ -90,6 +92,19 @@ UserSchema.methods.comparePassword = async function (canditatePassword) {
   const isMatch = await bcrypt.compare(canditatePassword, this.password);
 
   return isMatch;
+};
+
+UserSchema.methods.createResetPasswordToken = async function () {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+      // Set the token expiration time
+  this.passwordResetExpired = Date.now() + 10 * 60 * 1000; //10 min
+  console.log(resetToken, this.passwordResetToken);
+  return resetToken;
 };
 
 module.exports = mongoose.model("User", UserSchema);

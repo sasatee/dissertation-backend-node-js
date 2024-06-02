@@ -2,8 +2,9 @@ const User = require("../models/User");
 const Doctor = require("../models/Doctor");
 const { StatusCodes } = require("http-status-codes");
 const { BadRequestError } = require("../errors");
-const { UnauthenticatedError } = require("../errors");
+const { UnauthenticatedError, NotFoundError } = require("../errors");
 const axios = require("axios");
+const sendEmail = require("./../util/email");
 
 // Add this function google idToken
 const googleLogin = async (req, res) => {
@@ -132,38 +133,6 @@ const register = async (req, res) => {
   }
 };
 
-// const register = async (req, res) => {
-//   //if user is client
-//   const { email } = req.body;
-
-//   let checkEmail = await User.findOne({ email });
-//   if (checkEmail) {
-//     throw new BadRequestError("Email already existed");
-//   }
-
-//   const user = await User.create({ ...req.body });
-
-//   const token = user.createJWT();
-
-//   res.status(StatusCodes.CREATED).json({
-//     user: {
-//       firstname: user.firstName,
-//       lastname: user.lastName,
-//       isDoctor: user.isDoctor,
-//       doctorId: user.doctorId,
-//       profilePicture: user.profilePicture,
-//     },
-//     token,
-//   });
-
-//   //if user is a doctor , create doctor profile
-//   if (req.body.isDoctor) {
-//     await Doctor.create({
-//       ...req.body,
-//     });
-//   }
-// };
-
 const login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -198,4 +167,55 @@ const login = async (req, res) => {
   });
 };
 
-module.exports = { register, login, googleLogin };
+//forgot password
+const forgotPassword = async (req, res) => {
+  //1.Get user based on posted email
+  const { email } = req.body;
+
+  const user = await User.findOne({ email }); // find email
+
+  if (!user) {
+    throw new NotFoundError(`No email found`);
+  }
+  //2. if user exist generate a reset token
+  const resetToken = await user.createResetPasswordToken();
+
+  await user.save({ validateBeforeSave: false });
+
+  //3. SEND TOKEN BACK TO USER EMAIL
+  const resetUrl = `${req.protocol}://${req.get(
+    "host"
+  )}/api/v1/auth/resetpassword/${resetToken}`;
+  const message = `We're have received a password reset request. Please use the below link to reset your password\n\n${resetUrl}\n\nThis password link will be valid only for 10 minutes`;
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: `Password change request received`,
+      message: message,
+    });
+    res.status(StatusCodes.OK).json({
+      status: "success",
+      message: "Password reset link to user email",
+    });
+  } catch (err) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpired = undefined;
+   await user.save({ validateBeforeSave: false });
+
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      msg: "There was an error occur sending password reset. Please try again later",
+    });
+  }
+};
+
+const resetPassword = (req, res) => {
+  console.log(req);
+};
+
+module.exports = {
+  register,
+  login,
+  googleLogin,
+  forgotPassword,
+  resetPassword,
+};
