@@ -196,7 +196,7 @@ const forgotPassword = async (req, res) => {
     });
     res.status(StatusCodes.OK).json({
       status: "success",
-      message: "Password reset link to user email",
+      message: "Password reset link has sent to user email",
     });
   } catch (err) {
     user.passwordResetToken = undefined;
