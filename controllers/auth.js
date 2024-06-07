@@ -187,7 +187,7 @@ const forgotPassword = async (req, res) => {
   const resetUrl = `${req.protocol}://${req.get(
     "host"
   )}/api/v1/auth/resetpassword/${resetToken}`;
-  const message = `We're have received a password reset request. Please use the below link to reset your password\n\n${resetUrl}\n\nThis password link will be valid only for 10 minutes`;
+  const message = `We're have received a password reset request. Please use the below code to reset your password\n\n${resetToken}\n\nThis verification code will be valid/availble only for 10 minutes`;
   try {
     await sendEmail({
       email: user.email,
@@ -196,7 +196,7 @@ const forgotPassword = async (req, res) => {
     });
     res.status(StatusCodes.OK).json({
       status: "success",
-      message: "Password reset link has sent to user email",
+      message: "Verification code has been sent to user email",
     });
   } catch (err) {
     user.passwordResetToken = undefined;
