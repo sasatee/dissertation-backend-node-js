@@ -97,15 +97,16 @@ UserSchema.methods.comparePassword = async function (canditatePassword) {
 
 UserSchema.methods.createResetPasswordToken = async function () {
   // const resetToken = crypto.randomBytes(32).toString("hex");
-  const resetToken = Math.floor(100000* Math.random() * 10);
-
+  const token = Math.floor(100000 * Math.random() * 10);
+  const resetToken = token.toString();
+  //console.log(typeof resetToken)
   this.passwordResetToken = crypto
     .createHash("sha256")
     .update(resetToken)
     .digest("hex");
   // Set the token expiration time
   this.passwordResetExpired = Date.now() + 10 * 60 * 1000; //10 min
-   console.log(resetToken, this.passwordResetToken);
+  //console.log(resetToken, this.passwordResetToken);
   return resetToken;
 };
 
