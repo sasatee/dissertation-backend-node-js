@@ -6,6 +6,7 @@ const { UnauthenticatedError, NotFoundError } = require("../errors");
 const axios = require("axios");
 const sendEmail = require("./../util/email");
 const crypto = require("crypto");
+const generateVerificationToken = require("./../util/Verification");
 
 // Add this function google idToken
 const googleLogin = async (req, res) => {
@@ -64,7 +65,6 @@ const googleLogin = async (req, res) => {
       token,
     });
   } catch (error) {
-    console.error("Error during authentication:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -86,6 +86,7 @@ const register = async (req, res) => {
     if (checkEmail) {
       throw new BadRequestError("Email already exists");
     }
+    const { verifytoken, hashedToken } = generateVerificationToken();
 
     // Create a new user
     const newUser = {
@@ -96,8 +97,20 @@ const register = async (req, res) => {
       gender,
       profilePicture,
       password,
+      emailVerificationToken: hashedToken,
     };
     const user = await User.create(newUser);
+
+    const verificationUrl = `${req.protocol}://${req.get(
+      "host"
+    )}/api/v1/auth/verifyemail/${verifytoken}`;
+    const message = `Thank you for registering. Please verify your email by clicking the link: \n\n${verificationUrl}\n\nIf you did not request this, please ignore this email.`;
+
+    await sendEmail({
+      email: user.email,
+      subject: "Email Verification",
+      message: message,
+    });
 
     // If the user is a doctor, create a doctor profile
     if (isDoctor) {
@@ -126,46 +139,89 @@ const register = async (req, res) => {
         profilePicture: user.profilePicture,
       },
       token,
+      message: "Verification email sent. Please check your inbox.",
     });
   } catch (error) {
-    // Handle errors
-    console.error(error);
     res.status(StatusCodes.BAD_REQUEST).json({ msg: error.message });
   }
 };
 
+const verifyEmail = async (req, res) => {
+  try {
+    const token = req.params.token;
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({
+      emailVerificationToken: hashedToken,
+    });
+
+    if (!user) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ msg: "Token is invalid or has expired" });
+    }
+
+    // Clear the verification token and mark the email as verified
+    user.emailVerificationToken = undefined;
+    user.emailVerified = true;
+
+    await user.save({ validateBeforeSave: false }); // Prevent password validation
+
+    res.status(StatusCodes.OK).json({
+      msg: "Email verified successfully",
+    });
+  } catch (error) {
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ msg: "Error verifying email" });
+  }
+};
+
 const login = async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  if (!email || !password) {
-    throw new BadRequestError("Please provide email and password");
-  }
-  const user = await User.findOne({ email }); // find email in mongo database
+    if (!email || !password) {
+      throw new BadRequestError("Please provide email and password");
+    }
+    const user = await User.findOne({ email }).select("+password");
 
-  if (!user) {
-    throw new UnauthenticatedError(
-      "Invalid Credentials, please verify email again "
-    );
-  }
-  const isPasswordCorrect = await user.comparePassword(password);
-  if (!isPasswordCorrect) {
-    throw new UnauthenticatedError(
-      "Invalid Credentials,please verify the password again"
-    );
-  }
+    if (!user) {
+      throw new UnauthenticatedError(
+        "Invalid Credentials, please verify email again "
+      );
+    }
 
-  const token = user.createJWT();
-  res.status(StatusCodes.OK).json({
-    user: {
-      userId: user._id,
-      firstname: user.firstName,
-      lastname: user.lastName,
-      gender: user.gender,
-      isDoctor: user.isDoctor,
-      profilePicture: user.profilePicture,
-    },
-    token,
-  });
+    //verify email
+
+    const isPasswordCorrect = await user.comparePassword(password);
+    if (!isPasswordCorrect) {
+      throw new UnauthenticatedError(
+        "Invalid Credentials,please verify the password again"
+      );
+    }
+
+    if (!user.emailVerified) {
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ msg: "Please verify your email to log in." });
+    }
+
+    const token = user.createJWT();
+    res.status(StatusCodes.OK).json({
+      user: {
+        userId: user._id,
+        firstname: user.firstName,
+        lastname: user.lastName,
+        gender: user.gender,
+        isDoctor: user.isDoctor,
+        profilePicture: user.profilePicture,
+      },
+      token,
+    });
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ msg: error.message });
+  }
 };
 
 //forgot password
@@ -255,4 +311,5 @@ module.exports = {
   googleLogin,
   forgotPassword,
   resetPassword,
+  verifyEmail,
 };

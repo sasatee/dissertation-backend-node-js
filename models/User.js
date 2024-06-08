@@ -23,7 +23,7 @@ const UserSchema = new mongoose.Schema({
     unique: true,
     match: [
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
-      "Please provide valid email",
+      "Please provide valid email address",
     ],
   },
   password: {
@@ -34,6 +34,7 @@ const UserSchema = new mongoose.Schema({
       "Please provide a valid password with at least one letter, one number, and one special character",
     ],
     minlength: 8,
+    select: false, // Important to exclude password from queries by default
   },
   gender: {
     type: String,
@@ -60,11 +61,20 @@ const UserSchema = new mongoose.Schema({
       ref: "Appointment",
     },
   ],
+  emailVerificationToken: String,
+  emailVerified: {
+    type: Boolean,
+    default: false,
+  },
   passwordResetToken: String,
   passwordResetExpired: Date,
   passwordChangedAt: Date,
 });
+
 UserSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
+    return next();
+  }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
@@ -90,9 +100,11 @@ UserSchema.methods.createJWT = function () {
 };
 
 UserSchema.methods.comparePassword = async function (canditatePassword) {
-  const isMatch = await bcrypt.compare(canditatePassword, this.password);
+  if (!this.password || !canditatePassword) {
+    throw new Error("Password comparison error: Invalid input");
+  }
 
-  return isMatch;
+  return await bcrypt.compare(canditatePassword, this.password);
 };
 
 UserSchema.methods.createResetPasswordToken = async function () {
@@ -106,7 +118,6 @@ UserSchema.methods.createResetPasswordToken = async function () {
     .digest("hex");
   // Set the token expiration time
   this.passwordResetExpired = Date.now() + 10 * 60 * 1000; //10 min
-  //console.log(resetToken, this.passwordResetToken);
   return resetToken;
 };
 
