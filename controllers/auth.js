@@ -149,8 +149,7 @@ const register = async (req, res) => {
 const verifyEmail = async (req, res) => {
   try {
     const token = req.params.token;
-    //const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-      const hashedToken = Math.floor(100000 * Math.random() * 10);
+    const hashedToken = crypto.createHash("sha256").update(token).digest("base64");
 
     const user = await User.findOne({
       emailVerificationToken: hashedToken,
