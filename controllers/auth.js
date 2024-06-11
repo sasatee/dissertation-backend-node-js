@@ -104,7 +104,7 @@ const register = async (req, res) => {
     const verificationUrl = `${req.protocol}://${req.get(
       "host"
     )}/api/v1/auth/verifyemail/${verifytoken}`;
-    const message = `Thank you for registering. Please verify your email by clicking the link: \n\n${verificationUrl}\n\nIf you did not request this, please ignore this email.`;
+    const message = `Thank you for registering. Please verify your email by entering the verification code below : \n\n${verifytoken}\n\nIf you did not request this, please ignore this email.`;
 
     await sendEmail({
       email: user.email,
@@ -149,7 +149,7 @@ const register = async (req, res) => {
 const verifyEmail = async (req, res) => {
   try {
     const token = req.params.token;
-    const hashedToken = crypto.createHash("sha256").update(token).digest("base64");
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
     const user = await User.findOne({
       emailVerificationToken: hashedToken,
@@ -201,11 +201,11 @@ const login = async (req, res) => {
       );
     }
 
-    // if (!user.emailVerified) {
-    //   return res
-    //     .status(StatusCodes.UNAUTHORIZED)
-    //     .json({ msg: "Please verify your email to log in." });
-    // }
+    if (!user.emailVerified) {
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ msg: "Please verify your email to log in." });
+    }
 
     const token = user.createJWT();
     res.status(StatusCodes.OK).json({
