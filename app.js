@@ -11,6 +11,7 @@ const appointment = require("./routes/appointment");
 const doctor = require("./routes/doctor")
 const payment = require('./routes/payment')
 const profile = require("./routes/profile")
+const stream = require("./routes/stream")
 
 
 
@@ -45,6 +46,7 @@ app.use("/api/v1/appointment",userAuthentication, appointment);
 app.use("/api/v1/doctor",userAuthentication,doctor)
 app.use("/api/v1/payment",userAuthentication,payment)
 app.use("/api/v1/profile",userAuthentication,profile)
+app.use("/api/v1/token",userAuthentication,stream)
 
 app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
