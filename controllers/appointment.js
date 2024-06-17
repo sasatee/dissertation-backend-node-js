@@ -91,7 +91,7 @@ const getAppointment = async (req, res) => {
 // Create an Appointment by user
 const createAppointment = async (req, res) => {
   const { userId } = req.user;
-  const { doctorId, bookedTime, bookedTimeAMOrPM } = req.body;
+  const { doctorId, bookedTime, bookedTimeAMOrPM, durationMinutes } = req.body;
 
   if (!doctorId || !mongoose.Types.ObjectId.isValid(doctorId)) {
     return res
@@ -116,6 +116,25 @@ const createAppointment = async (req, res) => {
       .status(StatusCodes.BAD_REQUEST)
       .json({ message: "Booking time in Am or Time is required" });
   }
+  //time slot
+  const startTime = new Date(bookedTime);
+  const endTime = new Date(startTime.getTime() + durationMinutes * 60000);
+  // Check for overlapping appointments
+  const existingAppointments = await Appointment.find({
+    doctorId: doctorId,
+    bookedTime: {
+      $lt: endTime, // End time of new appointment is after start time of existing appointments
+      $gte: startTime, // Start time of new appointment is before end time of existing appointments
+    },
+  });
+
+  if (existingAppointments.length > 0) {
+    return res.status(StatusCodes.CONFLICT).json({
+      message: "Time slot is already booked.",
+    });
+  }
+
+  //
 
   // Extract the profilePicture field from the doctor model
   //cahnge if neccesary
@@ -127,9 +146,10 @@ const createAppointment = async (req, res) => {
     const appointment = await Appointment.create({
       ...req.body,
       userId: userId,
-      bookedTime: new Date(bookedTime),
+      bookedTime: startTime,
       profilePicture: profilePicture,
       price: price,
+      durationMinutes,
       doctorName: `${firstName} ${lastName}`,
     });
 

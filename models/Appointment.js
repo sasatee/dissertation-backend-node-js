@@ -38,6 +38,7 @@ const appointmentSchema = new Schema(
       type: Number,
       require: true,
     },
+    durationMinutes: { type: Number, required: true },
   }
   // { timestamps: true }
 );
