@@ -1,8 +1,8 @@
 const jwt = require("jsonwebtoken");
 const { UnauthenticatedError } = require("../errors");
 
+// In authentication.js
 const authMiddleware = async (req, res, next) => {
-  //check header
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer")) {
     throw new UnauthenticatedError("Authentication Invalid");
@@ -12,11 +12,9 @@ const authMiddleware = async (req, res, next) => {
 
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
-    //  const user = User.findById(payload.id).select("-password")
+    
 
-    //  req.user =user
-
-    //attach the user to the job routes
+    // Attach the user to the request
     req.user = {
       userId: payload.userId,
       firstname: payload.firstname,
@@ -24,7 +22,7 @@ const authMiddleware = async (req, res, next) => {
       isDoctor: payload.isDoctor,
       gender: payload.gender,
       profilePicture: payload.profilePicture,
-      doctorId: payload.doctorId,
+      doctorId: payload.isDoctor ? payload.doctorId : null,
     };
 
     next();
