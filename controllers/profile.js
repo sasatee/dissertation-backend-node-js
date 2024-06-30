@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Doctor = require("../models/Doctor");
 const { StatusCodes } = require("http-status-codes");
 const { NotFoundError } = require("../errors");
+const mongoose = require("mongoose")
 
 // Get user or doctor profile
 const getUserProfile = async (req, res) => {
@@ -29,11 +30,11 @@ const getUserProfile = async (req, res) => {
   }
 };
 
-// Update user or doctor profile
 const updateUserProfile = async (req, res) => {
   try {
     const userId = req.params.id;
-    const doctorId = req.user.doctorId;
+    const { doctorId } = req.user;
+
     const {
       firstName,
       lastName,
@@ -57,17 +58,22 @@ const updateUserProfile = async (req, res) => {
     }
 
     // Update other user profile fields
-    user.firstName = firstName;
-    user.lastName = lastName;
-    user.gender = gender;
+    user.firstName = firstName || user.firstName;
+    user.lastName = lastName || user.lastName;
+    user.gender = gender || user.gender;
 
     await user.save();
 
     // Update doctor profile if the user is a doctor
     let doctorProfile = null;
-    if (user.isDoctor) {
-      doctorProfile = await Doctor.findOneAndUpdate(
-        { doctorId },
+    if (user.isDoctor && doctorId) {
+      // Ensure doctorId is valid ObjectId
+      if (!mongoose.Types.ObjectId.isValid(doctorId)) {
+        throw new BadRequestError("Invalid doctorId");
+      }
+
+      doctorProfile = await Doctor.findByIdAndUpdate(
+        doctorId,
         { specialization, experience, price, description },
         { new: true, runValidators: true }
       );
