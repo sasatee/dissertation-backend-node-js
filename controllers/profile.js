@@ -7,7 +7,9 @@ const { NotFoundError } = require("../errors");
 const getUserProfile = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const user = await User.findById(userId).select("-password");
+    const doctorId = req.user.doctorId;
+
+    const user = await User.findById(userId);
     if (!user) {
       throw new NotFoundError("User not found");
     }
@@ -15,7 +17,7 @@ const getUserProfile = async (req, res) => {
     // If the user is a doctor, retrieve the doctor profile
     let doctorProfile = null;
     if (user.isDoctor) {
-      doctorProfile = await Doctor.findOne({ doctorId: userId });
+      doctorProfile = await Doctor.findById(doctorId);
       if (!doctorProfile) {
         throw new NotFoundError("Doctor profile not found");
       }
@@ -31,7 +33,17 @@ const getUserProfile = async (req, res) => {
 const updateUserProfile = async (req, res) => {
   try {
     const userId = req.params.id;
-    const { firstName, lastName, gender, profilePicture, specialization, experience, price, description } = req.body;
+    const doctorId = req.user.doctorId;
+    const {
+      firstName,
+      lastName,
+      gender,
+      profilePicture,
+      specialization,
+      experience,
+      price,
+      description,
+    } = req.body;
 
     // Find the user first
     const user = await User.findById(userId);
@@ -55,7 +67,7 @@ const updateUserProfile = async (req, res) => {
     let doctorProfile = null;
     if (user.isDoctor) {
       doctorProfile = await Doctor.findOneAndUpdate(
-        { doctorId: userId },
+        { doctorId },
         { specialization, experience, price, description },
         { new: true, runValidators: true }
       );
