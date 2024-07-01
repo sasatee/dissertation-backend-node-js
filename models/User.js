@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
+
 const UserSchema = new mongoose.Schema({
   firstName: {
     type: String,
@@ -22,24 +23,20 @@ const UserSchema = new mongoose.Schema({
     maxlength: 50,
     unique: true,
     match: [
-      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
       "Please provide valid email address",
     ],
   },
   password: {
     type: String,
     required: [true, "Please provide a password"],
-    match: [
-      /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/,
-      "Please provide a valid password with at least one letter, one number, and one special character",
-    ],
     minlength: 8,
-    select: false, // Important to exclude password from queries by default
+    select: false,
   },
   gender: {
     type: String,
     enum: ["male", "female", "other", "unspecified"],
-    require: [false, "Please make a selection"],
+    required: false,
   },
   isDoctor: {
     type: Boolean,
@@ -55,7 +52,6 @@ const UserSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Doctor",
   },
-
   emailVerificationToken: String,
   emailVerified: {
     type: Boolean,
@@ -94,26 +90,23 @@ UserSchema.methods.createJWT = function () {
   });
 };
 
-UserSchema.methods.comparePassword = async function (canditatePassword) {
-  if (!this.password || !canditatePassword) {
+UserSchema.methods.comparePassword = async function (candidatePassword) {
+  if (!this.password || !candidatePassword) {
     throw new Error("Password comparison error: Invalid input");
   }
 
-  return await bcrypt.compare(canditatePassword, this.password);
+  return await bcrypt.compare(candidatePassword, this.password);
 };
 
 UserSchema.methods.createResetPasswordToken = async function () {
-  // const resetToken = crypto.randomBytes(32).toString("hex");
-  const token = Math.floor(100000 * Math.random() * 10);
-  const resetToken = token.toString();
+  const token = Math.floor(100000 * Math.random() * 10).toString();
 
   this.passwordResetToken = crypto
     .createHash("sha256")
-    .update(resetToken)
+    .update(token)
     .digest("hex");
-  // Set the token expiration time
-  this.passwordResetExpired = Date.now() + 10 * 60 * 1000; //10 min
-  return resetToken;
+  this.passwordResetExpired = Date.now() + 10 * 60 * 1000;
+  return token;
 };
 
 module.exports = mongoose.model("User", UserSchema);

@@ -69,83 +69,6 @@ const googleLogin = async (req, res) => {
   }
 };
 
-// const register = async (req, res) => {
-//   try {
-//     const {
-//       firstName,
-//       lastName,
-//       email,
-//       password,
-//       isDoctor,
-//       gender,
-//       profilePicture,
-//     } = req.body;
-
-//     // Check if the email already exists
-//     let checkEmail = await User.findOne({ email });
-//     if (checkEmail) {
-//       throw new BadRequestError("Email already exists");
-//     }
-//     const { verifytoken, hashedToken } = generateVerificationToken();
-
-//     // Create a new user
-//     const newUser = {
-//       firstName,
-//       lastName,
-//       email,
-//       isDoctor,
-//       gender,
-//       profilePicture,
-//       password,
-//       emailVerificationToken: hashedToken,
-//     };
-//     const user = await User.create(newUser);
-
-//     const verificationUrl = `${req.protocol}://${req.get(
-//       "host"
-//     )}/api/v1/auth/verifyemail/${verifytoken}`;
-//     const message = `Thank you for registering. Please verify your email by entering the verification code below : \n\n${verifytoken}\n\nIf you did not request this, please ignore this email.`;
-
-//     await sendEmail({
-//       email: user.email,
-//       subject: "Email Verification",
-//       message: message,
-//     });
-
-//     // If the user is a doctor, create a doctor profile
-//     if (isDoctor) {
-//       // Assuming Doctor schema requires additional fields like 'name' and 'password'
-//       await Doctor.create({
-//         firstName,
-//         lastName,
-//         email,
-//         isDoctor,
-//         gender,
-//         profilePicture,
-//         doctorId: _id,
-//       });
-//     }
-
-//     // Create a JWT token for the user
-//     const token = user.createJWT();
-
-//     // Response with user details and token
-//     res.status(StatusCodes.CREATED).json({
-//       user: {
-//         firstName: user.firstName,
-//         lastName: user.lastName,
-//         isDoctor: user.isDoctor,
-//         doctorId: user.doctorId,
-//         profilePicture: user.profilePicture,
-//       },
-//       token,
-//       message: "Verification email sent. Please check your inbox.",
-//     });
-//   } catch (error) {
-//     res.status(StatusCodes.BAD_REQUEST).json({ msg: error.message });
-//   }
-// };
-// In auth.js
 const register = async (req, res) => {
   try {
     const {
@@ -163,9 +86,10 @@ const register = async (req, res) => {
     if (checkEmail) {
       throw new BadRequestError("Email already exists");
     }
+
     const { verifytoken, hashedToken } = generateVerificationToken();
 
-    // Create a new user
+    // Create a new user object
     const newUser = {
       firstName,
       lastName,
@@ -177,24 +101,30 @@ const register = async (req, res) => {
       emailVerificationToken: hashedToken,
     };
 
-    // If the user is a doctor, create a doctor profile
+    // Create the user first
+    const user = await User.create(newUser);
+
+    // If the user is a doctor, create a doctor profile and set doctorId
     if (isDoctor) {
       const doctor = await Doctor.create({
+        doctorId: user._id,
         firstName,
         lastName,
         email,
         gender,
         profilePicture,
+        description: "", // Add default or required fields
+        experience: "", // Add default or required fields
+        price: 0, // Add default or required fields
       });
-      newUser.doctorId = doctor._id;
+      user.doctorId = doctor._id;
+      await user.save(); // Save the updated user with doctorId
     }
-
-    const user = await User.create(newUser);
 
     const verificationUrl = `${req.protocol}://${req.get(
       "host"
     )}/api/v1/auth/verifyemail/${verifytoken}`;
-    const message = `Thank you for registering. Please verify your email by entering the verification code below : \n\n${verifytoken}\n\nIf you did not request this, please ignore this email.`;
+    const message = `Thank you for registering. Please verify your email by entering the verification code below: \n\n${verifytoken}\n\nIf you did not request this, please ignore this email.`;
 
     await sendEmail({
       email: user.email,
@@ -377,7 +307,7 @@ const resetPassword = async (req, res) => {
       gender: user.gender,
       isDoctor: user.isDoctor,
       profilePicture: user.profilePicture,
-      doctorId:user.doctorId
+      doctorId: user.doctorId,
     },
     loginToken,
   });

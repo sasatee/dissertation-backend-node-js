@@ -1,3 +1,4 @@
+
 const mongoose = require("mongoose");
 
 const doctorSchema = new mongoose.Schema({
@@ -6,21 +7,17 @@ const doctorSchema = new mongoose.Schema({
     ref: "User",
   },
   email: {
-    type: mongoose.Schema.Types.String,
-    ref: "User",
+    type: String,
     unique: true,
   },
   firstName: {
-    type: mongoose.Schema.Types.String,
-    ref: "User",
+    type: String,
   },
   lastName: {
-    type: mongoose.Schema.Types.String,
-    ref: "User",
+    type: String,
   },
   profilePicture: {
-    type: mongoose.Schema.Types.String,
-    ref: "User",
+    type: String,
   },
   specialization: {
     type: String,
@@ -33,12 +30,13 @@ const doctorSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    require: true,
+    //required: true,
   },
   price: {
     type: Number,
-    require: true,
+    required: true,
   },
 });
 
 module.exports = mongoose.model("Doctor", doctorSchema);
+

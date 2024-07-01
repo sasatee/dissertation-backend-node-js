@@ -1,21 +1,29 @@
 const Doctor = require("../models/Doctor");
 const { StatusCodes } = require("http-status-codes");
 
-
 const getAllDoctors = async (req, res) => {
   try {
-    const doctors = await Doctor.find();
-    res
-      .status(StatusCodes.OK)
-      .json({ doctors: doctors, count: doctors.length });
+    const doctors = await Doctor.find().populate('doctorId');
+
+    // Transform the response to flatten the doctorId details into the main doctor object
+    const transformedDoctors = doctors.map(doctor => {
+      const doctorObject = doctor.toObject();
+      if (doctorObject.doctorId) {
+        const { doctorId, ...rest } = doctorObject;
+        return { ...doctorId, ...rest };
+      }
+      return doctorObject;
+    });
+
+    res.status(StatusCodes.OK).json({ doctors: transformedDoctors, count: transformedDoctors.length });
   } catch (error) {
     // Handle errors appropriately
     console.error(error);
-    res
-      .status(StatusCodes.UNAUTHORIZED)
-      .json({ msg: "unauthentication error" });
+    res.status(StatusCodes.UNAUTHORIZED).json({ msg: "unauthentication error" });
   }
 };
+
+
 
 const getDoctorById = async (req, res) => {
   try {
