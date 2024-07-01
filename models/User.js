@@ -55,12 +55,7 @@ const UserSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "Doctor",
   },
-  appointments: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Appointment",
-    },
-  ],
+
   emailVerificationToken: String,
   emailVerified: {
     type: Boolean,

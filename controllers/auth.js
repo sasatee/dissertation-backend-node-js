@@ -291,6 +291,7 @@ const login = async (req, res) => {
         lastname: user.lastName,
         gender: user.gender,
         isDoctor: user.isDoctor,
+        doctorId: user.doctorId,
         profilePicture: user.profilePicture,
       },
       token,
@@ -376,6 +377,7 @@ const resetPassword = async (req, res) => {
       gender: user.gender,
       isDoctor: user.isDoctor,
       profilePicture: user.profilePicture,
+      doctorId:user.doctorId
     },
     loginToken,
   });

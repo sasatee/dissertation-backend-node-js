@@ -31,10 +31,6 @@ const doctorSchema = new mongoose.Schema({
   rating: {
     type: Number,
   },
-  availability: {
-    type: [String],
-    require: false,
-  },
   description: {
     type: String,
     require: true,
@@ -43,12 +39,6 @@ const doctorSchema = new mongoose.Schema({
     type: Number,
     require: true,
   },
-  appointments: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Appointment",
-    },
-  ],
 });
 
 module.exports = mongoose.model("Doctor", doctorSchema);
