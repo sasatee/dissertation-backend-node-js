@@ -58,7 +58,7 @@ const updateUserProfile = async (req, res) => {
     user.lastName = lastName || user.lastName;
     user.gender = gender || user.gender;
     if (profilePicture) {
-      user.profilePicture = profilePicture;
+      user.profilePicture = profilePicture || user.profilePicture;
     }
 
     await user.save();
