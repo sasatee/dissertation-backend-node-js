@@ -34,13 +34,22 @@ const appointmentSchema = new Schema(
     doctorName: {
       type: String,
     },
+    userFullName: {
+      type: String,
+    },
+    userProfilePicture: {
+      type: String,
+    },
+    gender: {
+      type: String,
+    },
     price: {
       type: Number,
       require: true,
     },
     durationMinutes: { type: Number, required: true },
-  }
-  // { timestamps: true }
+  },
+   { timestamps: true }
 );
 
 module.exports = mongoose.model("Appointment", appointmentSchema);

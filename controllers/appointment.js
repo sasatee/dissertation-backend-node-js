@@ -2,6 +2,7 @@ const { StatusCodes } = require("http-status-codes");
 const { NotFoundError } = require("../errors/not-found");
 const Appointment = require("../models/Appointment");
 const Doctor = require("../models/Doctor");
+const User = require("../models/User");
 const mongoose = require("mongoose");
 
 //get all appoitment doctor has
@@ -18,7 +19,9 @@ const getAllAppointments = async (req, res) => {
 
   try {
     const appointments = await Appointment.find(filter).sort("createdAt");
-    res.status(StatusCodes.OK).json({ appointments, count: appointments.length });
+    res
+      .status(StatusCodes.OK)
+      .json({ appointments, count: appointments.length });
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ msg: error.message });
   }
@@ -65,6 +68,7 @@ const createAppointment = async (req, res) => {
   }
 
   const doctor = await Doctor.findById(doctorId);
+  const user = await User.findById(userId);
   if (!doctor) {
     return res
       .status(StatusCodes.NOT_FOUND)
@@ -103,7 +107,14 @@ const createAppointment = async (req, res) => {
 
   // Extract the profilePicture field from the doctor model
   //cahnge if neccesary
+
   const { lastName, profilePicture, firstName, price } = doctor;
+  const {
+    firstName: userFirstName,
+    lastName: userSurname,
+    profilePicture: userProfilePicture,
+    gender: gender,
+  } = user;
 
   //
 
@@ -115,11 +126,14 @@ const createAppointment = async (req, res) => {
       profilePicture: profilePicture,
       price: price,
       durationMinutes,
+      userFullName: `${userFirstName} ${userSurname}`,
+      userProfilePicture: userProfilePicture,
       doctorName: `${firstName} ${lastName}`,
+      gender: gender,
     });
 
-    doctor.appointments.push(appointment._id);
-    await doctor.save();
+    // doctor.appointments.push(appointment._id);
+    // await doctor.save();
 
     res.status(StatusCodes.CREATED).json({ appointment });
   } catch (err) {
