@@ -143,25 +143,91 @@ const createAppointment = async (req, res) => {
 };
 
 // Update an Appointment
+// const updateAppointment = async (req, res) => {
+//   const { userId } = req.user;
+
+//   const { id: AppointmentId } = req.params;
+
+//   const appointment = await Appointment.findOneAndUpdate(
+//     {
+//       _id: AppointmentId,
+//       //userId: userId, // Ensure the appointment belongs to the logged-in user
+//     },
+//     req.body,
+//     { new: true, runValidators: true }
+//   );
+
+//   if (!appointment) {
+//     throw new NotFoundError(`No appointment found with id ${AppointmentId}`);
+//   }
+
+//   res.status(StatusCodes.OK).json({ appointment });
+// };
+
+// Update an Appointment
 const updateAppointment = async (req, res) => {
-  const { userId } = req.user;
-
+  const { userId, doctorId } = req.user;
+  console.log("Doctor Id", req.user.doctorId, "USER ID", req.user.userId);
   const { id: AppointmentId } = req.params;
+  const { bookedTime, durationMinutes } = req.body;
 
-  const appointment = await Appointment.findOneAndUpdate(
-    {
-      _id: AppointmentId,
-      //userId: userId, // Ensure the appointment belongs to the logged-in user
-    },
-    req.body,
-    { new: true, runValidators: true }
-  );
-
-  if (!appointment) {
-    throw new NotFoundError(`No appointment found with id ${AppointmentId}`);
+  if (!mongoose.Types.ObjectId.isValid(doctorId)) {
+    console.log(doctorId);
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Invalid doctor ID" });
   }
 
-  res.status(StatusCodes.OK).json({ appointment });
+  if (!bookedTime) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Booking time is required" });
+  }
+
+  const startTime = new Date(bookedTime);
+
+  const endTime = new Date(startTime.getTime() + durationMinutes * 60000);
+  //console.log(startTime,endTime)
+
+  try {
+    // Check for overlapping appointments
+    const existingAppointments = await Appointment.find({
+      doctorId: doctorId,
+      _id: { $ne: AppointmentId }, // Exclude current appointment
+      bookedTime: {
+        $lt: endTime, // End time of new appointment is after start time of existing appointments
+        $gte: startTime, // Start time of new appointment is before end time of existing appointments
+      },
+    });
+
+    if (existingAppointments.length > 0) {
+      return res.status(StatusCodes.CONFLICT).json({
+        message: "Time slot is already booked.",
+      });
+    }
+
+    const appointment = await Appointment.findOneAndUpdate(
+      {
+        _id: AppointmentId,
+        // userId: userId, // Ensure the appointment belongs to the logged-in user
+      },
+      {
+        ...req.body,
+        bookedTime: startTime,
+      },
+      { new: true, runValidators: true }
+    );
+    // console.log(appointment)
+
+    if (!appointment) {
+      throw new NotFoundError(`No appointment found with id ${AppointmentId}`);
+    }
+
+    res.status(StatusCodes.OK).json({ appointment });
+  } catch (err) {
+    console.error(`Error updating appointment: `, err);
+    res.status(StatusCodes.BAD_REQUEST).json({ error: err.message });
+  }
 };
 
 // Delete an Appointment
