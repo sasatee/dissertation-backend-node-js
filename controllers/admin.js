@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const { StatusCodes } = require("http-status-codes");
 
 const registerAdmin = async (req, res) => {
-  const { email, password,userName } = req.body;
+  const { email, password, userName } = req.body;
 
   try {
     const existingAdmin = await Admin.findOne({ email });
@@ -13,7 +13,7 @@ const registerAdmin = async (req, res) => {
         .json({ message: "Admin already exists" });
     }
 
-    const admin = new Admin({ email, password ,userName});
+    const admin = new Admin({ email, password, userName });
     await admin.save();
 
     res
@@ -31,7 +31,6 @@ const loginAdmin = async (req, res) => {
 
   try {
     const admin = await Admin.findOne({ email }).select("+password");
-    console.log(admin.userName)
 
     if (!admin) {
       return res
@@ -47,7 +46,6 @@ const loginAdmin = async (req, res) => {
     }
 
     const payload = { adminId: admin._id, username: admin.userName };
-    console.log(payload);
 
     const token = jwt.sign(payload, process.env.JWT_SECRET, {
       expiresIn: process.env.TOKEN_LIFETIME,
