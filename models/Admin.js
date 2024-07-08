@@ -13,6 +13,10 @@ const AdminSchema = new mongoose.Schema({
       "Please provide valid email address",
     ],
   },
+  userName: {
+    type: String,
+    require: true,
+  },
   password: {
     type: String,
     required: [true, "Please provide a password"],
