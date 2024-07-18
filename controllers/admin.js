@@ -1,6 +1,7 @@
 const Admin = require("../models/Admin");
 const jwt = require("jsonwebtoken");
 const { StatusCodes } = require("http-status-codes");
+const Doctor = require('../models/Doctor')
 
 const registerAdmin = async (req, res) => {
   const { email, password, userName } = req.body;
@@ -58,7 +59,25 @@ const loginAdmin = async (req, res) => {
       .json({ message: "Server error" });
   }
 };
+
+// Delete an Appointment
+const deleteDoctor = async (req, res) => {
+  
+  const { id: doctorId } = req.params;
+
+  const appointment = await Doctor.findOneAndDelete({
+    _id: doctorId,
+    
+  });
+
+  if (!appointment) {
+    throw new NotFoundError(`No dcotor found with id ${doctorId}`);
+  }
+
+  res.status(StatusCodes.OK).json({ msg: "Successfully deleted" });
+};
 module.exports = {
   registerAdmin,
   loginAdmin,
+  deleteDoctor
 };
