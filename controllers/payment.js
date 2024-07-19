@@ -45,10 +45,9 @@ const paymentIntent = async (req, res) => {
       },
     });
 
-    const user = req.body.user; // Assuming user information is sent in the request body
-    const orderID = paymentIntent.id; // Payment order ID
-    const amount = req.body.amount / 100; // Convert amount to dollars
-
+    const user = req.body.user; 
+    const orderID = paymentIntent.id; 
+    const amount = req.body.amount / 100;
     const message = `Thank you for your payment. Your payment order ID is ${orderID} and the amount charged is $${amount}.`;
 
     await sendEmail({
