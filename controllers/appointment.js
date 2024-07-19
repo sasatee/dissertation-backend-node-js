@@ -88,7 +88,7 @@ const createAppointment = async (req, res) => {
   //time slot
   const startTime = new Date(bookedTime);
   const endTime = new Date(startTime.getTime() + durationMinutes * 60000);
-  // Check for overlapping appointments
+
   const existingAppointments = await Appointment.find({
     doctorId: doctorId,
     bookedTime: {
@@ -103,10 +103,9 @@ const createAppointment = async (req, res) => {
     });
   }
 
-  //
+  
 
-  // Extract the profilePicture field from the doctor model
-  //cahnge if neccesary
+
 
   const { lastName, profilePicture, firstName, price } = doctor;
   const {
@@ -236,8 +235,7 @@ const deleteAppointment = async (req, res) => {
   const { id: AppointmentId } = req.params;
 
   const appointment = await Appointment.findOneAndDelete({
-    _id: AppointmentId,
-    //userId: userId, // Ensure the appointment belongs to the logged-in user
+    _id: AppointmentId
   });
 
   if (!appointment) {
