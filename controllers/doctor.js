@@ -36,7 +36,7 @@ const getDoctorById = async (req, res) => {
 
 const updateDoctor = async (req, res) => {
   try {
-    const { id: doctorId } = req.params; // Doctor ID from the URL parameter
+    const { id: doctorId } = req.params; 
 
     // Update doctor profile
     const updatedDoctor = await Doctor.findOneAndUpdate(
