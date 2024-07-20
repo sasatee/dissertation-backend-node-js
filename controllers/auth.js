@@ -188,29 +188,23 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      throw new BadRequestError("Please provide email and password");
+      return res.status(StatusCodes.BAD_REQUEST).json({ msg: "Please provide email and password" });
     }
     const user = await User.findOne({ email }).select("+password");
 
     if (!user) {
-      throw new UnauthenticatedError(
-        "Invalid Credentials, please verify email again "
-      );
+      return res.status(StatusCodes.UNAUTHORIZED).json({ msg: "Invalid Credentials, please verify email again" });
     }
 
     //verify email
 
     const isPasswordCorrect = await user.comparePassword(password);
     if (!isPasswordCorrect) {
-      throw new UnauthenticatedError(
-        "Invalid Credentials,please verify the password again"
-      );
+      return res.status(StatusCodes.UNAUTHORIZED).json({ msg: "Invalid Credentials, please verify the password again" });
     }
 
     if (!user.emailVerified) {
-      return res
-        .status(StatusCodes.UNAUTHORIZED)
-        .json({ msg: "Please verify your email to log in." });
+      return res.status(StatusCodes.UNAUTHORIZED).json({ msg: "Please verify your email to log in." });
     }
 
     const token = user.createJWT();
@@ -227,7 +221,7 @@ const login = async (req, res) => {
       token,
     });
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ msg: error.message });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ msg: "Internal server error" });
   }
 };
 

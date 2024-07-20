@@ -60,6 +60,7 @@ const getAppointment = async (req, res) => {
 const createAppointment = async (req, res) => {
   const { userId } = req.user;
   const { doctorId, bookedTime, bookedTimeAMOrPM, durationMinutes } = req.body;
+  console.log(req.user)
 
   if (!doctorId || !mongoose.Types.ObjectId.isValid(doctorId)) {
     return res
@@ -189,7 +190,7 @@ const updateAppointment = async (req, res) => {
   //console.log(startTime,endTime)
 
   try {
-    // Check for overlapping appointments
+ 
     const existingAppointments = await Appointment.find({
       doctorId: doctorId,
       _id: { $ne: AppointmentId }, // Exclude current appointment
@@ -208,7 +209,7 @@ const updateAppointment = async (req, res) => {
     const appointment = await Appointment.findOneAndUpdate(
       {
         _id: AppointmentId,
-        // userId: userId, // Ensure the appointment belongs to the logged-in user
+        // userId: userId, 
       },
       {
         ...req.body,
