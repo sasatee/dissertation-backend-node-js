@@ -207,11 +207,11 @@ const login = async (req, res) => {
       );
     }
 
-    // if (!user.emailVerified) {
-    //   return res
-    //     .status(StatusCodes.UNAUTHORIZED)
-    //     .json({ msg: "Please verify your email to log in." });
-    // }
+    if (!user.emailVerified) {
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .json({ msg: "Please verify your email to log in." });
+    }
 
     const token = user.createJWT();
     res.status(StatusCodes.OK).json({
