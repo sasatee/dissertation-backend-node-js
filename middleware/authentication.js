@@ -22,6 +22,7 @@ const authMiddleware = async (req, res, next) => {
       isDoctor: payload.isDoctor,
       gender: payload.gender,
       profilePicture: payload.profilePicture,
+      email:payload.email,
       doctorId: payload.isDoctor ? payload.doctorId : null,
     };
 

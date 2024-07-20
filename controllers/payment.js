@@ -36,6 +36,7 @@ const sendEmail = require("./../util/email");
 const stripe = require("stripe")(process.env.STRIPE_SECRET);
 
 const paymentIntent = async (req, res) => {
+  console.log(req.user)
   try {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: req.body.amount,
@@ -45,13 +46,13 @@ const paymentIntent = async (req, res) => {
       },
     });
 
-    const user = req.body.user; 
+
     const orderID = paymentIntent.id; 
-    const amount = req.body.amount / 100;
+    const amount = req.body.amount ;
     const message = `Thank you for your payment. Your payment order ID is ${orderID} and the amount charged is $${amount}.`;
 
     await sendEmail({
-      email: user.email,
+      email:  req.user.email,
       subject: "Payment Confirmation",
       message: message,
     });

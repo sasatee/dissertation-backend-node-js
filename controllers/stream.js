@@ -7,6 +7,7 @@ const stream = async (req, res) => {
       process.env.STREAM_API_SECRET
     );
     const streamToken = client.createToken(req.user.userId.toString());
+   // console.log(streamToken)
     res.status(200).json({ streamToken });
   } catch (error) {
     res.status(400).json({ error: error.message });

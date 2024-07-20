@@ -57,6 +57,7 @@ const updateUserProfile = async (req, res) => {
     user.firstName = firstName || user.firstName;
     user.lastName = lastName || user.lastName;
     user.gender = gender || user.gender;
+    user.email = email || user.email
     if (profilePicture) {
       user.profilePicture = profilePicture || user.profilePicture;
     }
@@ -89,6 +90,9 @@ const updateUserProfile = async (req, res) => {
       doctorProfile.profilePicture =
         profilePicture || doctorProfile.profilePicture;
         doctorProfile.rating = rating || doctorProfile.rating
+        doctorProfile.email = email || doctorProfile.email
+        
+        
 
       await doctorProfile.save();
     }
