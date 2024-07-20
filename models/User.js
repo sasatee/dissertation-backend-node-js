@@ -78,7 +78,6 @@ UserSchema.methods.createJWT = function () {
     lastname: this.lastName,
     isDoctor: this.isDoctor,
     gender: this.gender,
-    email:this.email,
     profilePicture: this.profilePicture,
   };
 

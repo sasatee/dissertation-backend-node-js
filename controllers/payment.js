@@ -1,42 +1,8 @@
-// const sendEmail = require("./../util/email");
-// const stripe = require("stripe")(
-//  process.env.STRIPE_SECRET
-// );
-// const paymentIntent = async (req, res) => {
-//  try {
-//     const paymentIntent = await stripe.paymentIntents.create({
-//       amount: req.body.amount,
-//       currency: 'usd',
-//       automatic_payment_methods: {
-//         enabled: true,
-//       },
-//     });
-
-//     const message = `Thank you. Please verify your email by entering the verification code below: \n\n${verifytoken}\n\nIf you did not request this, please ignore this email.`;
-
-//     await sendEmail({
-//       email: user.email,
-//       subject: "Email Verification",
-//       message: message,
-//     });
-
-
-//     res.json({ paymentIntent: paymentIntent.client_secret });
-//   } catch (e) {
-//     res.status(400).json({
-//       error: e.message,
-//     });
-//   }
-// };
-
-// module.exports = { paymentIntent };
-
-
 const sendEmail = require("./../util/email");
 const stripe = require("stripe")(process.env.STRIPE_SECRET);
 
 const paymentIntent = async (req, res) => {
-  console.log(req.user)
+
   try {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: req.body.amount,
@@ -46,18 +12,20 @@ const paymentIntent = async (req, res) => {
       },
     });
 
+    res.status(200).json({ paymentIntent: paymentIntent.client_secret });
 
-    const orderID = paymentIntent.id; 
-    const amount = req.body.amount ;
-    const message = `Thank you for your payment. Your payment order ID is ${orderID} and the amount charged is $${amount}.`;
+    // Send email after ensuring the response status is 200
+    if (res.statusCode === 200) {
+      const orderID = paymentIntent.id; 
+      const amount = req.body.amount;
+      const message = `Thank you for your payment. Your payment order ID is ${orderID} and the amount charged is $${amount}.`;
 
-    await sendEmail({
-      email:  req.user.email,
-      subject: "Payment Confirmation",
-      message: message,
-    });
-
-    res.json({ paymentIntent: paymentIntent.client_secret });
+      await sendEmail({
+        email: 'dexyfplay@gmail.com',
+        subject: "Payment Confirmation",
+        message: message,
+      });
+    }
   } catch (e) {
     res.status(400).json({
       error: e.message,
@@ -66,4 +34,3 @@ const paymentIntent = async (req, res) => {
 };
 
 module.exports = { paymentIntent };
-

@@ -60,7 +60,6 @@ const googleLogin = async (req, res) => {
         gender: user.gender, // Return the placeholder to indicate the need for an update
         isDoctor: user.isDoctor,
         profilePicture: user.profilePicture,
-        email:user.email,
         mustUpdateGender: user.gender === "unspecified", // Flag to indicate the frontend to prompt for gender selection
       },
       token,
@@ -144,7 +143,6 @@ const register = async (req, res) => {
         isDoctor: user.isDoctor,
         doctorId: user.doctorId,
         profilePicture: user.profilePicture,
-        email:user.email,
       },
       token,
       message: "Verification email sent. Please check your inbox.",
@@ -225,7 +223,6 @@ const login = async (req, res) => {
         isDoctor: user.isDoctor,
         doctorId: user.doctorId,
         profilePicture: user.profilePicture,
-        email:user.email
       },
       token,
     });
