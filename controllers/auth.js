@@ -41,10 +41,10 @@ const googleLogin = async (req, res) => {
         firstName: tokenInfo.given_name,
         lastName: tokenInfo.family_name,
         email: tokenInfo.email,
-        // Set a default or generated password, as the password field is required by your schema
-        password: "PasswordEr123675@", // Consider a more secure method for generating passwords
-        isDoctor: false, // Set default role or determine based on additional logic
-        gender: "unspecified", // Set default or additional logic to determine gender
+      
+        password: "PasswordEr123675@", 
+        isDoctor: false, 
+        gender: "unspecified", 
         profilePicture: tokenInfo.picture, // Google profile picture URL
       });
     }
@@ -57,10 +57,10 @@ const googleLogin = async (req, res) => {
         userId: user._id,
         firstname: user.firstName,
         lastname: user.lastName,
-        gender: user.gender, // Return the placeholder to indicate the need for an update
+        gender: user.gender, 
         isDoctor: user.isDoctor,
         profilePicture: user.profilePicture,
-        mustUpdateGender: user.gender === "unspecified", // Flag to indicate the frontend to prompt for gender selection
+        mustUpdateGender: user.gender === "unspecified", 
       },
       token,
     });
